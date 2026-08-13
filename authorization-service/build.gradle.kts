@@ -22,6 +22,12 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    testImplementation("org.springframework.boot:spring-boot-starter-security-test")
+
+    implementation("io.jsonwebtoken:jjwt:0.12.6")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -30,9 +36,9 @@ dependencies {
 
     //implementation("org.springframework.kafka:spring-kafka")
 
-    //runtimeOnly("org.postgresql:postgresql")
-    //implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    //testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
