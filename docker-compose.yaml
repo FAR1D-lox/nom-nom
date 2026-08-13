@@ -1,0 +1,286 @@
+services:
+  auth-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  user-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: user_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  recipe-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    volumes:
+      - recipe-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: recipe_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  ingredient-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5435:5432"
+    volumes:
+      - ingredient-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ingredient_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  link-recipe-ingredient-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5436:5432"
+    volumes:
+      - link-recipe-ingredient-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: link_recipe_ingredient_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  reaction-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5437:5432"
+    volumes:
+      - reaction-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: reaction_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  comment-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5438:5432"
+    volumes:
+      - comment-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: comment_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  notification-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5439:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notification_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  favorite-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5440:5432"
+    volumes:
+      - favorite-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: favorite_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  proposal-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5441:5432"
+    volumes:
+      - proposal-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: proposal_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  view-history-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5442:5432"
+    volumes:
+      - view-history-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: view_history_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  complaint-db:
+    image: postgres:latest
+    restart: unless-stopped
+    ports:
+      - "5443:5432"
+    volumes:
+      - complaint-db-data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: complaint_db
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - app-network
+
+
+#  kafka:
+#    image: confluentinc/cp-kafka:8.1.1
+#    restart: unless-stopped
+#    ports:
+#      - "29092:29092"
+#      - "9092:9092"
+#    volumes:
+#      - kafka_data:/var/lib/kafka/data
+#    environment:
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+#      KAFKA_NODE_ID: 1
+#      CLUSTER_ID: lcEE_0O5R_2ueRWWNGLdXg
+#      KAFKA_PROCESS_ROLES: controller,broker
+#      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+#      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+#      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:9093
+#    healthcheck:
+#      test: kafka-topics --bootstrap-server localhost:9092 --list
+#      interval: 10s
+#      timeout: 5s
+#      start_period: 30s
+#      retries: 5
+
+volumes:
+  auth-db-data:
+  user-db-data:
+  recipe-db-data:
+  ingredient-db-data:
+  link-recipe-ingredient-db-data:
+  reaction-db-data:
+  comment-db-data:
+  notification-db-data:
+  favorite-db-data:
+  proposal-db-data:
+  view-history-db-data:
+  complaint-db-data:
+#  kafka_data:
+
+networks:
+  app-network:
+    driver: bridge
