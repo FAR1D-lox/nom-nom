@@ -34,7 +34,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         user.setPasswordHash(encoder.encode(request.password()));
         repository.save(user);
 
-        String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
+        String token = jwtService.generateToken(user.getId(), user.getRole().name());
         return new LoginResponse(token);
     }
 
@@ -46,17 +46,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new RuntimeException("Wrong password");
         }
 
-        String token = jwtService.generateToken(user.getUsername(), user.getRole().name());
+        String token = jwtService.generateToken(user.getId(), user.getRole().name());
         return new LoginResponse(token);
     }
 
-    public boolean validate(String token) {
-        return jwtService.validateToken(token);
-    }
-
-    public AuthorizationEntity getUserByUsername(String username) {
-        return repository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
+    public AuthorizationEntity getUserById(Long userId) {
+        return repository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with userId: " + userId));
     }
 
 }

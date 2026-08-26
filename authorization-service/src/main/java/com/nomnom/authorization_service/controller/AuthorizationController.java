@@ -26,14 +26,10 @@ public class AuthorizationController {
         return service.login(request);
     }
 
-    @PostMapping("/validate")
-    public boolean validate(@RequestParam String token) {
-        return service.validate(token);
-    }
-
     @GetMapping("/me")
     public AuthorizationDto getInfo(@AuthenticationPrincipal UserDetails userDetails) {
-        AuthorizationEntity user = service.getUserByUsername(userDetails.getUsername());
+        Long userId = Long.parseLong(userDetails.getUsername());
+        AuthorizationEntity user = service.getUserById(userId);
         return new AuthorizationDto(
                 user.getId(),
                 user.getUsername(),
