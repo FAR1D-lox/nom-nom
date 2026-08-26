@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 @Component
-@RequiredArgsConstructor
-public class JwtFilter extends OncePerRequestFilter {
-
-    private final JwtService jwtService;
+public class HeaderFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
@@ -31,39 +28,16 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        String userId = request.getHeader("X-User-Id");
+        String role = request.getHeader("X-User-Role");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        final String token = authHeader.substring(7);
-        if (!jwtService.validateToken(token)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        final String username = jwtService.extractUsername(token);
-        final String role = jwtService.extractRole(token);
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = new User(username,
+        if (userId != null && !userId.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = new User(userId,
                     "",
                     Collections.singletonList(
                             new SimpleGrantedAuthority("ROLE_" + role)
-                            ));
-
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities()
-            );
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+                    ));
         }
-
         filterChain.doFilter(request, response);
     }
 }

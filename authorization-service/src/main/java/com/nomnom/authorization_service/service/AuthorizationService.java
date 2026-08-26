@@ -11,8 +11,5 @@ public interface AuthorizationService {
 
     LoginResponse login(LoginRequest request);
 
-    boolean validate(String token);
-
-    AuthorizationEntity getUserByUsername(String username);
-
+    AuthorizationEntity getUserById(Long userId);
 }
