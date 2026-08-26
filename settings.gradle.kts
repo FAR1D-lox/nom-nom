@@ -15,5 +15,6 @@ include(
     "recommendation-service",
     "search-service",
     "user-service",
-    "view-history-service"
+    "view-history-service",
+    "gateway-service"
 )

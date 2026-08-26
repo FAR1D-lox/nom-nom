@@ -16,11 +16,13 @@ repositories {
 }
 
 dependencies {
+
     implementation(platform("org.springframework.boot:spring-boot-dependencies:4.1.0"))
     annotationProcessor(platform("org.springframework.boot:spring-boot-dependencies:4.1.0"))
     testImplementation(platform("org.springframework.boot:spring-boot-dependencies:4.1.0"))
 
     api("jakarta.validation:jakarta.validation-api")
+    implementation("io.jsonwebtoken:jjwt:0.12.6")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

@@ -28,9 +28,11 @@ dependencies {
 
     //implementation("org.springframework.kafka:spring-kafka")
 
-    //runtimeOnly("org.postgresql:postgresql")
-    //implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    //testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+
+    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
