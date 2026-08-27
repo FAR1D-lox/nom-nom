@@ -1,4 +1,4 @@
-package com.nomnom.user_service;
+package com.nomnom.user_service.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

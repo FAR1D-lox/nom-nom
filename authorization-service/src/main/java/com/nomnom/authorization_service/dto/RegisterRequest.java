@@ -1,4 +1,4 @@
-package com.nomnom.authorization_service.entity;
+package com.nomnom.authorization_service.dto;
 
 import com.nomnom.UserRole;
 

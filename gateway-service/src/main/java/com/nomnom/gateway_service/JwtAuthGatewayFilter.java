@@ -1,6 +1,7 @@
 package com.nomnom.gateway_service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -14,17 +15,18 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
 
     private final GatewayJwtService jwtService;
 
     private static final List<String> PUBLIC = List.of(
-            "auth/register", "auth/login"
+            "/auth/register", "/auth/login"
     );
 
     private static final List<String> GUEST = List.of(
-            "recipes", "search", "ingredients"
+            "/users", "/recipes", "/search", "/ingredients"
     );
 
     @Override
@@ -33,6 +35,7 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
 
         // 1) публичные отправляем в auth сервис
         if (PUBLIC.stream().anyMatch(path::startsWith)) {
+            log.info("Navigate to authentication service");
             return chain.filter(exchange);
         }
 
@@ -41,9 +44,11 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
         // 2) нет токена - либо гость, либо 401
         if (auth == null || !auth.startsWith("Bearer ")) {
             if (GUEST.stream().anyMatch(path::startsWith)) {
+                log.info("Navigate to opened service");
                 return chain.filter(withHeaders(exchange, null, "GUEST"));
             }
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            log.error("Trying to navigate to closed service without authorization");
             return exchange.getResponse().setComplete();
         }
 
@@ -51,11 +56,13 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
         String token = auth.substring(7);
         if (!jwtService.isValid(token)) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            log.error("Invalid jwt token");
             return exchange.getResponse().setComplete();
         }
 
         String userId = jwtService.extractUserId(token);
         String role = jwtService.extractUserRole(token);
+        log.info("Successful navigate to closed service");
         return chain.filter(withHeaders(exchange, userId, role));
     }
 

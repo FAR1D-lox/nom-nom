@@ -1,5 +1,6 @@
 package com.nomnom.user_service.service;
 
+import com.nomnom.UserRegisteredEvent;
 import com.nomnom.user_service.dto.EditUserProfileDto;
 import com.nomnom.user_service.dto.UserProfileDto;
 
@@ -17,4 +18,8 @@ public interface UserService {
     void addSubscription(Long myId, Long otherId);
 
     void removeSubscription(Long myId, Long otherId);
+
+    void createUserProfile(UserRegisteredEvent event);
+
+    List<UserProfileDto> getAllProfiles();
 }

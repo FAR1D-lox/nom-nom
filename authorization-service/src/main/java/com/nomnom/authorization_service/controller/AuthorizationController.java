@@ -1,5 +1,9 @@
 package com.nomnom.authorization_service.controller;
 
+import com.nomnom.authorization_service.dto.AuthorizationDto;
+import com.nomnom.authorization_service.dto.LoginRequest;
+import com.nomnom.authorization_service.dto.LoginResponse;
+import com.nomnom.authorization_service.dto.RegisterRequest;
 import com.nomnom.authorization_service.entity.*;
 import com.nomnom.authorization_service.service.AuthorizationService;
 import lombok.AllArgsConstructor;
@@ -18,6 +22,7 @@ public class AuthorizationController {
 
     @PostMapping("/register")
     public LoginResponse registration(@RequestBody RegisterRequest request) {
+        log.info("Method 'Register' is called");
         return service.register(request);
     }
 

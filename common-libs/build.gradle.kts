@@ -16,15 +16,17 @@ repositories {
 }
 
 dependencies {
+    val springBom = platform("org.springframework.boot:spring-boot-dependencies:4.1.0")
 
-    implementation(platform("org.springframework.boot:spring-boot-dependencies:4.1.0"))
-    annotationProcessor(platform("org.springframework.boot:spring-boot-dependencies:4.1.0"))
-    testImplementation(platform("org.springframework.boot:spring-boot-dependencies:4.1.0"))
+    implementation(springBom)
+    annotationProcessor(springBom)
+    testImplementation(springBom)
+    testCompileOnly(springBom)
+    testAnnotationProcessor(springBom)
 
     api("jakarta.validation:jakarta.validation-api")
     implementation("io.jsonwebtoken:jjwt:0.12.6")
 
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 

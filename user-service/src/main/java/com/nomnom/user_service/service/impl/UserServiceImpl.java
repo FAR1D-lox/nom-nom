@@ -1,15 +1,19 @@
 package com.nomnom.user_service.service.impl;
 
+import com.nomnom.UserRegisteredEvent;
 import com.nomnom.user_service.UserRepository;
 import com.nomnom.user_service.dto.EditUserProfileDto;
 import com.nomnom.user_service.dto.UserProfileDto;
 import com.nomnom.user_service.entity.UserEntity;
 import com.nomnom.user_service.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -35,6 +39,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserProfileDto> getAllProfiles() {
+        return repository.findAll().stream().map(this::parseToDto).toList();
+    }
+
+    @Override
     public List<UserProfileDto> getSubscribers(Long userId) {
         return List.of();
     }
@@ -52,5 +61,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public void removeSubscription(Long myId, Long otherId) {
 
+    }
+
+    @Override
+    @Transactional
+    public void createUserProfile(UserRegisteredEvent event) {
+        LocalDateTime now = LocalDateTime.now();
+        UserEntity user = new UserEntity(
+                event.id(),
+                event.username(),
+                event.role(),
+                now,
+                now,
+                new HashSet<>(),
+                new HashSet<>()
+        );
+        repository.save(user);
+    }
+
+    private UserProfileDto parseToDto(UserEntity user) {
+        return new UserProfileDto(
+                user.getUsername(),
+                user.getRole(),
+                user.getCreatedAt()
+        );
     }
 }

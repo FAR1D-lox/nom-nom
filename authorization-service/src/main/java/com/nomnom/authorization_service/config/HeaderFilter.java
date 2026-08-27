@@ -37,6 +37,13 @@ public class HeaderFilter extends OncePerRequestFilter {
                     Collections.singletonList(
                             new SimpleGrantedAuthority("ROLE_" + role)
                     ));
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    "",
+                    userDetails.getAuthorities()
+            );
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);
     }

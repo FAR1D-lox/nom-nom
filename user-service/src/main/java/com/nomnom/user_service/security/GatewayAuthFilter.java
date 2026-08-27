@@ -1,9 +1,10 @@
-package com.nomnom.user_service;
+package com.nomnom.user_service.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@Slf4j
 public class GatewayAuthFilter extends OncePerRequestFilter {
 
     @Override
@@ -26,6 +28,8 @@ public class GatewayAuthFilter extends OncePerRequestFilter {
     {
         String userId = request.getHeader("X-User-Id");
         String role = request.getHeader("X-User-Role");
+
+        log.info("GatewayAuthFilter: X-User-Id={}, X-User-Role={}", userId, role);
 
         if (role != null && !role.isBlank() && !"GUEST".equalsIgnoreCase(role)) {
             UserDetails user = User.builder()
