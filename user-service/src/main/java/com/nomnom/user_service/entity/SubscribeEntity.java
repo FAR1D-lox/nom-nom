@@ -1,10 +1,9 @@
 package com.nomnom.user_service.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -14,6 +13,7 @@ import lombok.Setter;
                 "subscription_id"
         }
 ))
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -24,11 +24,12 @@ public class SubscribeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subscriber_id", nullable = false)
-    private UserEntity subscriber;
+    @Column(name = "subscriber_id", nullable = false)
+    private Long subscriberId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subscription_id", nullable = false)
-    private UserEntity subscription;
+    @Column(name = "subscription_id", nullable = false)
+    private Long subscriptionId;
+
+    @Column(name = "subscription_from", nullable = false)
+    private LocalDateTime subscriptionFrom;
 }

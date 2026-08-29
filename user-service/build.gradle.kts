@@ -22,6 +22,7 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.security:spring-security-test")
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
 

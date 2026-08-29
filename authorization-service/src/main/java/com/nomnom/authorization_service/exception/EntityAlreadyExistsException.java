@@ -1,4 +1,4 @@
-package com.nomnom.authorization_service.Exception;
+package com.nomnom.authorization_service.exception;
 
 public class EntityAlreadyExistsException extends RuntimeException {
     public EntityAlreadyExistsException(String message) {

@@ -21,11 +21,11 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
 
     private final GatewayJwtService jwtService;
 
-    private static final List<String> PUBLIC = List.of(
+    private static final List<String> AUTH = List.of(
             "/auth/register", "/auth/login"
     );
 
-    private static final List<String> GUEST = List.of(
+    private static final List<String> PUBLIC = List.of(
             "/users", "/recipes", "/search", "/ingredients"
     );
 
@@ -34,7 +34,7 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
         String path = exchange.getRequest().getURI().getPath();
 
         // 1) публичные отправляем в auth сервис
-        if (PUBLIC.stream().anyMatch(path::startsWith)) {
+        if (AUTH.stream().anyMatch(path::startsWith)) {
             log.info("Navigate to authentication service");
             return chain.filter(exchange);
         }
@@ -43,9 +43,9 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
 
         // 2) нет токена - либо гость, либо 401
         if (auth == null || !auth.startsWith("Bearer ")) {
-            if (GUEST.stream().anyMatch(path::startsWith)) {
+            if (PUBLIC.stream().anyMatch(path::startsWith)) {
                 log.info("Navigate to opened service");
-                return chain.filter(withHeaders(exchange, null, "GUEST"));
+                return chain.filter(withHeaders(exchange, null, ""));
             }
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             log.error("Trying to navigate to closed service without authorization");
@@ -62,7 +62,7 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
 
         String userId = jwtService.extractUserId(token);
         String role = jwtService.extractUserRole(token);
-        log.info("Successful navigate to closed service");
+        log.info("Successful navigate with token");
         return chain.filter(withHeaders(exchange, userId, role));
     }
 

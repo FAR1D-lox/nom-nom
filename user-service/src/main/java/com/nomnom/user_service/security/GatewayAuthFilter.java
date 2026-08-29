@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,16 +32,20 @@ public class GatewayAuthFilter extends OncePerRequestFilter {
 
         log.info("GatewayAuthFilter: X-User-Id={}, X-User-Role={}", userId, role);
 
-        if (role != null && !role.isBlank() && !"GUEST".equalsIgnoreCase(role)) {
+        if (userId != null && !userId.isBlank() && role != null && !role.isBlank()) {
             UserDetails user = User.builder()
                     .username(userId)
                     .password("")
                     .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + role)))
                     .build();
 
-            SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
-            );
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            user, null, user.getAuthorities());
+
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(auth);
+            SecurityContextHolder.setContext(context);
         }
 
         filterChain.doFilter(request, response);

@@ -2,7 +2,7 @@ package com.nomnom.authorization_service.service.impl;
 
 import com.nomnom.UserRegisteredEvent;
 import com.nomnom.UserRole;
-import com.nomnom.authorization_service.Exception.EntityAlreadyExistsException;
+import com.nomnom.authorization_service.exception.EntityAlreadyExistsException;
 import com.nomnom.authorization_service.entity.AuthorizationEntity;
 import com.nomnom.authorization_service.dto.LoginRequest;
 import com.nomnom.authorization_service.dto.LoginResponse;
@@ -35,10 +35,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
             throw new EntityAlreadyExistsException("User with username " + request.username() + " already exists");
         }
 
-        AuthorizationEntity user = new AuthorizationEntity();
-        user.setUsername(request.username());
-        user.setRole(request.role() != null ? request.role() : UserRole.DEFAULT);
-        user.setPasswordHash(encoder.encode(request.password()));
+        AuthorizationEntity user = AuthorizationEntity
+                .builder()
+                .username(request.username())
+                .role(request.role() != null ? request.role() : UserRole.DEFAULT)
+                .passwordHash(encoder.encode(request.password())).build();
         AuthorizationEntity savedUser = repository.save(user);
 
         UserRegisteredEvent event = new UserRegisteredEvent(

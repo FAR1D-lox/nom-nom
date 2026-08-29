@@ -1,89 +1,186 @@
 package com.nomnom.user_service.service.impl;
 
 import com.nomnom.UserRegisteredEvent;
-import com.nomnom.user_service.UserRepository;
-import com.nomnom.user_service.dto.EditUserProfileDto;
-import com.nomnom.user_service.dto.UserProfileDto;
+import com.nomnom.user_service.mapper.UserMapper;
+import com.nomnom.user_service.entity.SubscribeEntity;
+import com.nomnom.user_service.exception.PrivateProfileException;
+import com.nomnom.user_service.SubscribeVision;
+import com.nomnom.user_service.exception.SubscriptionExistsException;
+import com.nomnom.user_service.exception.SubscriptionNotFoundException;
+import com.nomnom.user_service.repository.UserRepository;
+import com.nomnom.user_service.exception.UsernameTakenException;
+import com.nomnom.user_service.mapper.EditUserProfileDto;
+import com.nomnom.user_service.mapper.UserProfileDto;
 import com.nomnom.user_service.entity.UserEntity;
+import com.nomnom.user_service.repository.SubscribeRepository;
 import com.nomnom.user_service.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
+    private final SubscribeRepository subscribeRepository;
+    private final UserMapper userMapper;
 
     @Override
     public UserProfileDto getProfile(Long userId) {
-        UserEntity user = repository.findById(userId)
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id = " + userId + " not found"));
-        return new UserProfileDto(
-                user.getUsername(),
-                user.getRole(),
-                user.getCreatedAt());
+        return userMapper.toUserProfileDto(user);
+    }
+
+    @Transactional
+    @Override
+    public UserProfileDto editProfile(
+            Long userId,
+            EditUserProfileDto edit,
+            boolean haveAllPermission) {
+        UserEntity user = userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("User with id = " + userId + " not found"));
+
+        if (!user.getUsername().equals(edit.username()) && userRepository.existsByUsername(edit.username())) {
+            throw new UsernameTakenException("Username " + edit.username() + " has already taken by someone");
+        }
+
+        if (!haveAllPermission && !user.getRole().equals(edit.role())) {
+            throw new AccessDeniedException("You cannot change your role");
+        }
+
+        if (haveAllPermission && !user.getSubscribeVision().equals(edit.subscribeVision())) {
+            throw new AccessDeniedException("You cannot infringe upon a user's freedom");
+        }
+
+        UserEntity editedUser = UserEntity
+                .builder()
+                .id(user.getId())
+                .username(edit.username())
+                .role(edit.role())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(LocalDateTime.now())
+                .subscribersCount(user.getSubscribersCount())
+                .subscribeVision(edit.subscribeVision())
+                .subscriptionsCount(user.getSubscriptionsCount())
+                .build();
+
+        return userMapper.toUserProfileDto(userRepository.save(editedUser));
     }
 
     @Override
-    public UserProfileDto editProfile(Long userId, EditUserProfileDto edit) {
-        return null;
+    public List<UserProfileDto> getAllProfiles() { //Переделать на пагинацию
+        return userRepository.findAll().stream().map(userMapper::toUserProfileDto).toList();
     }
 
     @Override
-    public List<UserProfileDto> getAllProfiles() {
-        return repository.findAll().stream().map(this::parseToDto).toList();
+    public List<UserProfileDto> getSubscribers(
+            Long userId,
+            Integer pageSize,
+            Integer pageNumber
+    ) {
+        if (!userRepository.existsById(userId)) {
+            throw new EntityNotFoundException("User with id = " + userId + " not found");
+        }
+
+        pageSize = pageSize != null ? pageSize : 50;
+        pageNumber = pageNumber != null ? pageNumber : 0;
+        Pageable pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+
+        List<UserEntity> subscribers = subscribeRepository.findSubscribersById(userId, pageable);
+
+        return subscribers.stream().map(userMapper::toUserProfileDto).toList();
     }
 
     @Override
-    public List<UserProfileDto> getSubscribers(Long userId) {
-        return List.of();
+    public List<UserProfileDto> getSubscriptions(
+            Long checkingId,
+            Long checkedId,
+            Integer pageSize,
+            Integer pageNumber
+    ) {
+        UserEntity user = userRepository.findById(checkedId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id = " + checkedId + " not found"));
+
+        if (!checkingId.equals(checkedId) && SubscribeVision.INVISIBLE.equals(user.getSubscribeVision()))
+            throw new PrivateProfileException(
+                    "You don't have permission to see user's subscriptions with id = " + checkedId);
+
+        pageSize = pageSize != null ? pageSize : 50;
+        pageNumber = pageNumber != null ? pageNumber : 0;
+        Pageable pageable = Pageable.ofSize(pageSize).withPage(pageNumber);
+
+        List<UserEntity> subscriptions = subscribeRepository.findSubscriptionsById(checkedId, pageable);
+        return subscriptions.stream().map(userMapper::toUserProfileDto).toList();
     }
 
     @Override
-    public List<UserProfileDto> getSubscriptions(Long userId) {
-        return List.of();
-    }
-
-    @Override
+    @Transactional
     public void addSubscription(Long myId, Long otherId) {
+        if (!userRepository.existsById(myId)) {
+            throw new EntityNotFoundException("User with id = " + myId + " not found");
+        }
+        if (!userRepository.existsById(otherId)) {
+            throw new EntityNotFoundException("User with id = " + otherId + " not found");
+        }
+
+        if (subscribeRepository.existsBySubscriberIdAndSubscriptionId(myId, otherId)) {
+            throw new SubscriptionExistsException("Subscription from " + myId + " to " + otherId + " has already exists");
+        }
+
+        if (myId.equals(otherId))
+            throw new IllegalArgumentException("User cannot subscribe to themselves");
+
+        userRepository.incrementSubscribersCount(otherId);
+        userRepository.incrementSubscriptionsCount(myId);
+        SubscribeEntity subscription = SubscribeEntity
+                .builder()
+                .subscriberId(myId)
+                .subscriptionId(otherId)
+                .subscriptionFrom(LocalDateTime.now())
+                .build();
+        subscribeRepository.save(subscription);
 
     }
 
     @Override
+    @Transactional
     public void removeSubscription(Long myId, Long otherId) {
-
+        if (!userRepository.existsById(myId)) {
+            throw new EntityNotFoundException("User with id = " + myId + " not found");
+        }
+        if (!userRepository.existsById(otherId)) {
+            throw new EntityNotFoundException("User with id = " + otherId + " not found");
+        }
+        if (!subscribeRepository.existsBySubscriberIdAndSubscriptionId(myId, otherId))
+            throw new SubscriptionNotFoundException("Subscription from " + myId + " to " + otherId + " not found");
+        userRepository.decrementSubscribersCount(otherId);
+        userRepository.decrementSubscriptionsCount(myId);
+        subscribeRepository.deleteBySubscriberIdAndSubscriptionId(myId, otherId);
     }
 
     @Override
     @Transactional
     public void createUserProfile(UserRegisteredEvent event) {
         LocalDateTime now = LocalDateTime.now();
-        UserEntity user = new UserEntity(
-                event.id(),
-                event.username(),
-                event.role(),
-                now,
-                now,
-                new HashSet<>(),
-                new HashSet<>()
-        );
-        repository.save(user);
-    }
-
-    private UserProfileDto parseToDto(UserEntity user) {
-        return new UserProfileDto(
-                user.getUsername(),
-                user.getRole(),
-                user.getCreatedAt()
-        );
+        UserEntity user = UserEntity
+                .builder()
+                .id(event.id())
+                .username(event.username())
+                .role(event.role())
+                .createdAt(now)
+                .updatedAt(now)
+                .subscribeVision(SubscribeVision.VISIBLE)
+                .build();
+        userRepository.save(user);
     }
 }

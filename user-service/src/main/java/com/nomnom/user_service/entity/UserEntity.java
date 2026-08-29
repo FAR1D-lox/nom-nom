@@ -1,11 +1,10 @@
 package com.nomnom.user_service.entity;
 
 import com.nomnom.UserRole;
+import com.nomnom.user_service.SubscribeVision;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -14,6 +13,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
@@ -27,11 +27,12 @@ public class UserEntity {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private UserRole role;
+    private UserRole role = UserRole.DEFAULT;
 
-    @UpdateTimestamp
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -39,10 +40,16 @@ public class UserEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "subscriber", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<SubscribeEntity> subscriptions = new HashSet<>();
+    @Builder.Default
+    @Column(name = "subscribers_count", nullable = false)
+    private Long subscribersCount = 0L;
 
-    @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<SubscribeEntity> subscribers = new HashSet<>();
+    @Builder.Default
+    @Column(name = "subscriptions_count", nullable = false)
+    private Long subscriptionsCount = 0L;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "subscribe_vision", nullable = false)
+    private SubscribeVision subscribeVision = SubscribeVision.VISIBLE;
 }
