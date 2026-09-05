@@ -34,7 +34,7 @@ public class IngredientServiceImpl implements IngredientService {
                 .orElseThrow(() -> new EntityNotFoundException("Ingredient with id = " + ingredientId + " not found"));
 
         mapper.updateEntityFromDto(editDto, ingredient);
-        return mapper.toResponseIngredientDto(repository.save(ingredient));
+        return mapper.toResponseIngredientDto(repository.saveAndFlush(ingredient));
     }
 
     @Transactional
