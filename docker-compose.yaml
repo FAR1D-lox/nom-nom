@@ -246,6 +246,7 @@ services:
     environment:
       - AUTH_SERVICE_URL = http://authorization-service:8080
       - USER_SERVICE_URL = http://user-service:8092
+      - INGREDIENT_SERVICE_URL = http://ingredient-service:8084
 
 
   kafka:
