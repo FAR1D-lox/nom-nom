@@ -1,8 +1,8 @@
 package com.nomnom.user_service;
 
 import com.nomnom.UserRole;
-import com.nomnom.user_service.mapper.EditUserProfileDto;
-import com.nomnom.user_service.mapper.UserProfileDto;
+import com.nomnom.user_service.mapper.RequestEditUserProfileDto;
+import com.nomnom.user_service.mapper.ResponseUserProfileDto;
 import com.nomnom.user_service.security.GatewayAuthFilter;
 import com.nomnom.user_service.security.SecurityConfig;
 import com.nomnom.user_service.service.UserService;
@@ -37,11 +37,11 @@ public class UserControllerTest {
     @MockitoBean
     private UserService userService;
 
-    private UserProfileDto profileDto;
+    private ResponseUserProfileDto profileDto;
 
     @BeforeEach
     void setUp() {
-        profileDto = new UserProfileDto(
+        profileDto = new ResponseUserProfileDto(
                 1L,
                 "Adolf1",
                 UserRole.DEFAULT,
@@ -89,7 +89,7 @@ public class UserControllerTest {
 
     @Test
     void editMyProfile_ShouldReturnProfile_WhenAuthenticated() throws Exception {
-        EditUserProfileDto editDto = new EditUserProfileDto("Adolf", UserRole.DEFAULT, SubscribeVision.INVISIBLE);
+        RequestEditUserProfileDto editDto = new RequestEditUserProfileDto("Adolf", UserRole.DEFAULT, SubscribeVision.INVISIBLE);
         when(userService.editProfile(1L, editDto, false)).thenReturn(profileDto);
 
         mockMvc.perform(post("/users/profile/edit/me")
@@ -105,7 +105,7 @@ public class UserControllerTest {
 
     @Test
     void editOtherProfile_ShouldReturnProfile_WhenAdmin() throws Exception {
-        EditUserProfileDto editDto = new EditUserProfileDto("Adolf", UserRole.ADMIN, SubscribeVision.INVISIBLE);
+        RequestEditUserProfileDto editDto = new RequestEditUserProfileDto("Adolf", UserRole.ADMIN, SubscribeVision.INVISIBLE);
         when(userService.editProfile(1L, editDto, true)).thenReturn(profileDto);
 
         mockMvc.perform(post("/users/profile/edit/1")
@@ -120,7 +120,7 @@ public class UserControllerTest {
 
     @Test
     void editOtherProfile_ShouldReturn403_WhenNotAdmin() throws Exception {
-        EditUserProfileDto editDto = new EditUserProfileDto("Adolf", UserRole.ADMIN, SubscribeVision.INVISIBLE);
+        RequestEditUserProfileDto editDto = new RequestEditUserProfileDto("Adolf", UserRole.ADMIN, SubscribeVision.INVISIBLE);
 
         mockMvc.perform(post("/users/profile/edit/1")
                         .header("X-User-Id", "2")

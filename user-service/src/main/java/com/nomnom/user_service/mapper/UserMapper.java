@@ -8,6 +8,6 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
     @Mapping(source = "role", target = "role")
-    UserProfileDto toUserProfileDto(UserEntity userEntity);
+    ResponseUserProfileDto toUserProfileDto(UserEntity userEntity);
 
 }

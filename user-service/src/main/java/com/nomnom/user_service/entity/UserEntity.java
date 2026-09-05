@@ -33,7 +33,7 @@ public class UserEntity {
     private UserRole role = UserRole.DEFAULT;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp

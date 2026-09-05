@@ -8,9 +8,9 @@ import com.nomnom.user_service.exception.PrivateProfileException;
 import com.nomnom.user_service.exception.SubscriptionExistsException;
 import com.nomnom.user_service.exception.SubscriptionNotFoundException;
 import com.nomnom.user_service.exception.UsernameTakenException;
-import com.nomnom.user_service.mapper.EditUserProfileDto;
+import com.nomnom.user_service.mapper.RequestEditUserProfileDto;
+import com.nomnom.user_service.mapper.ResponseUserProfileDto;
 import com.nomnom.user_service.mapper.UserMapper;
-import com.nomnom.user_service.mapper.UserProfileDto;
 import com.nomnom.user_service.repository.SubscribeRepository;
 import com.nomnom.user_service.repository.UserRepository;
 import com.nomnom.user_service.service.impl.UserServiceImpl;
@@ -49,7 +49,7 @@ public class UserServiceTest {
 
     private UserEntity user1;
     private UserEntity user2;
-    private UserProfileDto profileDto;
+    private ResponseUserProfileDto profileDto;
 
     @BeforeEach
     void setUp() {
@@ -68,7 +68,7 @@ public class UserServiceTest {
                 .subscribeVision(SubscribeVision.INVISIBLE)
                 .createdAt(now)
                 .build();
-        profileDto = new UserProfileDto(1L,
+        profileDto = new ResponseUserProfileDto(1L,
                 "user1",
                 UserRole.DEFAULT, now,
                 0L,
@@ -81,7 +81,7 @@ public class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
         when(userMapper.toUserProfileDto(user1)).thenReturn(profileDto);
 
-        UserProfileDto result = userService.getProfile(1L);
+        ResponseUserProfileDto result = userService.getProfile(1L);
 
         assertNotNull(result);
         assertEquals(profileDto, result);
@@ -100,7 +100,7 @@ public class UserServiceTest {
 
     @Test
     void editProfile_ShouldThrowUsernameTakenException_WhenUsernameChangedToExists() {
-        EditUserProfileDto editProfileDto = new EditUserProfileDto("TakenName", UserRole.DEFAULT, SubscribeVision.VISIBLE);
+        RequestEditUserProfileDto editProfileDto = new RequestEditUserProfileDto("TakenName", UserRole.DEFAULT, SubscribeVision.VISIBLE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
         when(userRepository.existsByUsername("TakenName")).thenReturn(true);
 
@@ -111,7 +111,7 @@ public class UserServiceTest {
 
     @Test
     void editProfile_ShouldThrowAccessDeniedException_WhenUserTriesToChangeRoleWithoutAllPermission() {
-        EditUserProfileDto editProfileDto = new EditUserProfileDto("NewName", UserRole.ADMIN, SubscribeVision.VISIBLE);
+        RequestEditUserProfileDto editProfileDto = new RequestEditUserProfileDto("NewName", UserRole.ADMIN, SubscribeVision.VISIBLE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
 
         assertThrows(AccessDeniedException.class, () -> userService.editProfile(1L, editProfileDto, false));
@@ -119,7 +119,7 @@ public class UserServiceTest {
 
     @Test
     void editProfile_ShouldUpdateProfile_WhenSelfEditSuccess() {
-        EditUserProfileDto editProfileDto = new EditUserProfileDto("NewName", UserRole.DEFAULT, SubscribeVision.INVISIBLE);
+        RequestEditUserProfileDto editProfileDto = new RequestEditUserProfileDto("NewName", UserRole.DEFAULT, SubscribeVision.INVISIBLE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
         when(userRepository.existsByUsername("NewName")).thenReturn(false);
         when(userRepository.save(any(UserEntity.class))).thenReturn(user1);
@@ -135,12 +135,12 @@ public class UserServiceTest {
 
     @Test
     void editProfile_ShouldUpdateProfile_WhenAdminEditSuccessAndSameUsername() {
-        EditUserProfileDto editDto = new EditUserProfileDto("user1", UserRole.ADMIN, SubscribeVision.VISIBLE);
+        RequestEditUserProfileDto editDto = new RequestEditUserProfileDto("user1", UserRole.ADMIN, SubscribeVision.VISIBLE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
         when(userRepository.save(any(UserEntity.class))).thenReturn(user1);
         when(userMapper.toUserProfileDto(user1)).thenReturn(profileDto);
 
-        UserProfileDto result = userService.editProfile(1L, editDto, true);
+        ResponseUserProfileDto result = userService.editProfile(1L, editDto, true);
 
         assertNotNull(result);
         verify(userRepository, never()).existsByUsername(any());
@@ -149,7 +149,7 @@ public class UserServiceTest {
 
     @Test
     void editProfile_WhenAdminTriesToChangeSubscribeVision_ShouldThrowAccessDeniedException() {
-        EditUserProfileDto editDto = new EditUserProfileDto("user1", UserRole.DEFAULT, SubscribeVision.INVISIBLE);
+        RequestEditUserProfileDto editDto = new RequestEditUserProfileDto("user1", UserRole.DEFAULT, SubscribeVision.INVISIBLE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1)); // у user1 видимость VISIBLE
 
         assertThrows(AccessDeniedException.class, () -> userService.editProfile(1L, editDto, true));
@@ -157,13 +157,13 @@ public class UserServiceTest {
 
     @Test
     void editProfile_WhenAdminEditsProfileWithoutChangingVision_ShouldSuccess() {
-        EditUserProfileDto editDto = new EditUserProfileDto("NewName", UserRole.ADMIN, SubscribeVision.VISIBLE);
+        RequestEditUserProfileDto editDto = new RequestEditUserProfileDto("NewName", UserRole.ADMIN, SubscribeVision.VISIBLE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1)); // у user1 видимость VISIBLE
         when(userRepository.existsByUsername("NewName")).thenReturn(false);
         when(userRepository.save(any())).thenReturn(user1);
         when(userMapper.toUserProfileDto(any())).thenReturn(profileDto);
 
-        UserProfileDto result = userService.editProfile(1L, editDto, true);
+        ResponseUserProfileDto result = userService.editProfile(1L, editDto, true);
 
         assertNotNull(result);
         verify(userRepository).save(any());
@@ -171,12 +171,12 @@ public class UserServiceTest {
 
     @Test
     void editProfile_WhenUserChangesOwnSubscribeVision_ShouldSuccess() {
-        EditUserProfileDto editDto = new EditUserProfileDto("user1", UserRole.DEFAULT, SubscribeVision.INVISIBLE);
+        RequestEditUserProfileDto editDto = new RequestEditUserProfileDto("user1", UserRole.DEFAULT, SubscribeVision.INVISIBLE);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
         when(userRepository.save(any())).thenReturn(user1);
         when(userMapper.toUserProfileDto(any())).thenReturn(profileDto);
 
-        UserProfileDto result = userService.editProfile(1L, editDto, false);
+        ResponseUserProfileDto result = userService.editProfile(1L, editDto, false);
 
         assertNotNull(result);
         verify(userRepository).save(any());
@@ -187,7 +187,7 @@ public class UserServiceTest {
         when(userRepository.findAll()).thenReturn(List.of(user1, user2));
         when(userMapper.toUserProfileDto(user1)).thenReturn(profileDto);
 
-        List<UserProfileDto> result = userService.getAllProfiles();
+        List<ResponseUserProfileDto> result = userService.getAllProfiles();
 
         assertEquals(2, result.size());
         verify(userRepository).findAll();
@@ -206,7 +206,7 @@ public class UserServiceTest {
         when(subscribeRepository.findSubscribersById(eq(1L), any(Pageable.class))).thenReturn(List.of(user2));
         when(userMapper.toUserProfileDto(user2)).thenReturn(profileDto);
 
-        List<UserProfileDto> result = userService.getSubscribers(1L, null, null);
+        List<ResponseUserProfileDto> result = userService.getSubscribers(1L, null, null);
 
         assertEquals(1, result.size());
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
@@ -247,7 +247,7 @@ public class UserServiceTest {
         when(userRepository.findById(2L)).thenReturn(Optional.of(user2)); // checkingId == checkedId == 2
         when(subscribeRepository.findSubscriptionsById(eq(2L), any(Pageable.class))).thenReturn(List.of(user1));
 
-        List<UserProfileDto> result = userService.getSubscriptions(2L, 2L, null, null);
+        List<ResponseUserProfileDto> result = userService.getSubscriptions(2L, 2L, null, null);
 
         assertNotNull(result);
         verify(subscribeRepository).findSubscriptionsById(eq(2L), any(Pageable.class));
@@ -258,7 +258,7 @@ public class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1)); // user1 is VISIBLE
         when(subscribeRepository.findSubscriptionsById(eq(1L), any(Pageable.class))).thenReturn(List.of(user2));
 
-        List<UserProfileDto> result = userService.getSubscriptions(2L, 1L, 15, 1);
+        List<ResponseUserProfileDto> result = userService.getSubscriptions(2L, 1L, 15, 1);
 
         assertNotNull(result);
         verify(subscribeRepository).findSubscriptionsById(eq(1L), any(Pageable.class));

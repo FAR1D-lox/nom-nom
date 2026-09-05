@@ -1,7 +1,7 @@
 package com.nomnom.user_service.controller;
 
-import com.nomnom.user_service.mapper.EditUserProfileDto;
-import com.nomnom.user_service.mapper.UserProfileDto;
+import com.nomnom.user_service.mapper.RequestEditUserProfileDto;
+import com.nomnom.user_service.mapper.ResponseUserProfileDto;
 import com.nomnom.user_service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,30 +22,30 @@ public class UserController {
 
     @RequestMapping("/profile/show/me")
     @PreAuthorize("isAuthenticated()")
-    public UserProfileDto showMyProfile(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseUserProfileDto showMyProfile(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("Called 'showMyProfile'");
         Long userId = Long.parseLong(userDetails.getUsername());
         return service.getProfile(userId);
     }
 
     @RequestMapping("/profile/show/{userId}")
-    public UserProfileDto showOtherProfile(@PathVariable Long userId) {
+    public ResponseUserProfileDto showOtherProfile(@PathVariable Long userId) {
         log.info("Called 'showOtherProfile'");
         return service.getProfile(userId);
     }
 
     //Переделать на пагинацию
     @RequestMapping("/profile/show/all")
-    public List<UserProfileDto> showAll() {
+    public List<ResponseUserProfileDto> showAll() {
         log.info("Called 'showAll'");
         return service.getAllProfiles();
     }
 
     @PostMapping("/profile/edit/me")
     @PreAuthorize("isAuthenticated()")
-    public UserProfileDto editMyProfile(
+    public ResponseUserProfileDto editMyProfile(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody EditUserProfileDto edit) {
+            @RequestBody RequestEditUserProfileDto edit) {
         log.info("Called 'editMyProfile'");
         Long userId = Long.parseLong(userDetails.getUsername());
         return service.editProfile(userId, edit, false);
@@ -53,16 +53,16 @@ public class UserController {
 
     @PostMapping("/profile/edit/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public UserProfileDto editOtherProfile(
+    public ResponseUserProfileDto editOtherProfile(
             @PathVariable Long userId,
-            @RequestBody EditUserProfileDto edit) {
+            @RequestBody RequestEditUserProfileDto edit) {
         log.info("Called 'editOtherProfile");
         return service.editProfile(userId, edit, true);
     }
 
     @RequestMapping("/subscribers/show/me")
     @PreAuthorize("isAuthenticated()")
-    public List<UserProfileDto> showMySubscribers(
+    public List<ResponseUserProfileDto> showMySubscribers(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(name = "pageSize", required = false) Integer pageSize,
             @RequestParam(name = "pageNumber", required = false) Integer pageNumber
@@ -74,7 +74,7 @@ public class UserController {
 
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/subscriptions/show/me")
-    public List<UserProfileDto> showMySubscriptions(
+    public List<ResponseUserProfileDto> showMySubscriptions(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(name = "pageSize", required = false) Integer pageSize,
             @RequestParam(name = "pageNumber", required = false) Integer pageNumber
@@ -86,7 +86,7 @@ public class UserController {
 
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/subscriptions/show/{otherId}")
-    public List<UserProfileDto> showOtherSubscriptions(
+    public List<ResponseUserProfileDto> showOtherSubscriptions(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long otherId,
             @RequestParam(value = "pageSize", required = false) Integer pageSize,

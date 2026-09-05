@@ -1,6 +1,7 @@
 package com.nomnom.user_service.service.impl;
 
 import com.nomnom.UserRegisteredEvent;
+import com.nomnom.user_service.mapper.ResponseUserProfileDto;
 import com.nomnom.user_service.mapper.UserMapper;
 import com.nomnom.user_service.entity.SubscribeEntity;
 import com.nomnom.user_service.exception.PrivateProfileException;
@@ -9,8 +10,7 @@ import com.nomnom.user_service.exception.SubscriptionExistsException;
 import com.nomnom.user_service.exception.SubscriptionNotFoundException;
 import com.nomnom.user_service.repository.UserRepository;
 import com.nomnom.user_service.exception.UsernameTakenException;
-import com.nomnom.user_service.mapper.EditUserProfileDto;
-import com.nomnom.user_service.mapper.UserProfileDto;
+import com.nomnom.user_service.mapper.RequestEditUserProfileDto;
 import com.nomnom.user_service.entity.UserEntity;
 import com.nomnom.user_service.repository.SubscribeRepository;
 import com.nomnom.user_service.service.UserService;
@@ -22,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,7 +34,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserProfileDto getProfile(Long userId) {
+    public ResponseUserProfileDto getProfile(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id = " + userId + " not found"));
         return userMapper.toUserProfileDto(user);
@@ -43,9 +42,9 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserProfileDto editProfile(
+    public ResponseUserProfileDto editProfile(
             Long userId,
-            EditUserProfileDto edit,
+            RequestEditUserProfileDto edit,
             boolean haveAllPermission) {
         UserEntity user = userRepository.findById(userId)
             .orElseThrow(() -> new EntityNotFoundException("User with id = " + userId + " not found"));
@@ -67,8 +66,6 @@ public class UserServiceImpl implements UserService {
                 .id(user.getId())
                 .username(edit.username())
                 .role(edit.role())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(LocalDateTime.now())
                 .subscribersCount(user.getSubscribersCount())
                 .subscribeVision(edit.subscribeVision())
                 .subscriptionsCount(user.getSubscriptionsCount())
@@ -78,12 +75,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserProfileDto> getAllProfiles() { //Переделать на пагинацию
+    public List<ResponseUserProfileDto> getAllProfiles() { //Удалить потом
         return userRepository.findAll().stream().map(userMapper::toUserProfileDto).toList();
     }
 
     @Override
-    public List<UserProfileDto> getSubscribers(
+    public List<ResponseUserProfileDto> getSubscribers(
             Long userId,
             Integer pageSize,
             Integer pageNumber
@@ -102,7 +99,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserProfileDto> getSubscriptions(
+    public List<ResponseUserProfileDto> getSubscriptions(
             Long checkingId,
             Long checkedId,
             Integer pageSize,
@@ -146,7 +143,6 @@ public class UserServiceImpl implements UserService {
                 .builder()
                 .subscriberId(myId)
                 .subscriptionId(otherId)
-                .subscriptionFrom(LocalDateTime.now())
                 .build();
         subscribeRepository.save(subscription);
 
@@ -171,14 +167,11 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createUserProfile(UserRegisteredEvent event) {
-        LocalDateTime now = LocalDateTime.now();
         UserEntity user = UserEntity
                 .builder()
                 .id(event.id())
                 .username(event.username())
                 .role(event.role())
-                .createdAt(now)
-                .updatedAt(now)
                 .subscribeVision(SubscribeVision.VISIBLE)
                 .build();
         userRepository.save(user);

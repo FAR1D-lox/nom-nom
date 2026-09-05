@@ -2,12 +2,14 @@ package com.nomnom.user_service.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "subscribe",
+        name = "subscribes",
         uniqueConstraints = @UniqueConstraint(columnNames = {
                 "subscriber_id",
                 "subscription_id"
@@ -30,6 +32,7 @@ public class SubscribeEntity {
     @Column(name = "subscription_id", nullable = false)
     private Long subscriptionId;
 
-    @Column(name = "subscription_from", nullable = false)
+    @CreationTimestamp
+    @Column(name = "subscription_from", nullable = false, updatable = false)
     private LocalDateTime subscriptionFrom;
 }
